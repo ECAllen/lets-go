@@ -3,12 +3,11 @@ package main
 import (
 	"net/http"
 	"html/template"
-	"log"
 	"fmt"
 	"strconv"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
@@ -22,32 +21,31 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Internal Server Error", 500)
+		app.serverError(w, err)
+		return
 	}
 
 	err = ts.Execute(w, nil)
 	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "internal Server Error", 500)
+		app.serverError(w, err)
 	}
 
 }
 
-func showMemory(w http.ResponseWriter, r *http.Request) {
+func (app *application) showMemory(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 if err != nil || id < 1 {
-	http.NotFound(w,r)
+	app.notFound(w)
 	return
 }
 
 fmt.Fprintf(w, "Display a memory with id %d", id)
 }
 
-func createMemory(w http.ResponseWriter, r *http.Request){
+func (app *application) createMemory(w http.ResponseWriter, r *http.Request){
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost)
-		http.Error(w, "Method Not Allowed", 405)
+		app.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
 	w.Write([]byte("Create a new memory"))
