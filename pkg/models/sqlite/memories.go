@@ -3,6 +3,8 @@ package sqlite
 import (
 	"database/sql"
 	"github.com/ECAllen/lets-go/pkg/models"
+	"time"
+	"errors"
 )
 
 type MemoryModel struct {
@@ -11,16 +13,17 @@ type MemoryModel struct {
 
 func (m *MemoryModel) Insert(title, content string) (int, error) {
 
-	stmt := 'INSERT INTO memories (title, content, created) VALUES(?, ?, ?)'
+	stmt := "INSERT INTO memories (title, content, created) VALUES(?, ?, ?)"
+	currentTime := time.Now()
+	created := currentTime.Format("2006.01.02 15:04:05")
 
-	//TODO fix created date
 	result, err := m.DB.Exec(stmt, title, content, created)
 	if err != nil {
 		return 0, err
 	}
 
 	//TODO check sqlite doc for LastInsertId
-	if, err := result.LastInsertId()
+	id,err := result.LastInsertId()
 	if err != nil {
 		return 0, err
 	}
@@ -30,14 +33,12 @@ func (m *MemoryModel) Insert(title, content string) (int, error) {
 
 func (m *MemoryModel) Get(id int) (*models.Memory, error) {
 
-	stmt := "SELECT id, title, content, created FROM memories
-	WHERE id = ?"
+	stmt := "SELECT id, title, content, created FROM memories WHERE id = ?"
+	row := m.DB.QueryRow(stmt, id)
 
-	row := m.DB.QueryRow(stmt,  id)
+	mem := &models.Memory{}
 
-	m := &models.Memory{}
-
-	err := row.Scan(&m.ID, &m.Title, &m.Content, &m.Created)
+	err := row.Scan(&mem.ID, &mem.Title, &mem.Content, &mem.Created)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows){
 			return nil, models.ErrNoRecord
@@ -46,20 +47,19 @@ func (m *MemoryModel) Get(id int) (*models.Memory, error) {
 		}
 	}
 
-	return m, nil
+	return mem, nil
 }
 
 func (m *MemoryModel) Latest() ([]*models.Memory, error) {
 
-	stmt := 'SELECT id, title, content, created FROM memories
-	ORDER BY created DESC LIMIT 10'
+	stmt := "SELECT id, title, content, created FROM memories ORDER BY created DESC LIMIT 10"
 
 	rows, err := m.DB.Query(stmt)
 	if err != nil {
 		return nil, err
 	}
 
-	defer roes.Close()
+	defer rows.Close()
 
 	memories := []*models.Memory{}
 
@@ -79,6 +79,3 @@ func (m *MemoryModel) Latest() ([]*models.Memory, error) {
 
 	return  memories, nil
 }
-
-}
-

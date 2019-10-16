@@ -7,8 +7,7 @@ import (
 	"os"
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
-
-	"github.com/ECAllen/lets-go/pkg/model/sqlite"
+	"github.com/ECAllen/lets-go/pkg/models/sqlite"
 )
 
 type application struct {
@@ -24,7 +23,7 @@ func openDB(dbFile string) (*sql.DB, error) {
 	}
 
 	// TODO does this make sense with sqlite ?
-	if er = db.Ping(); err != nil {
+	if err = db.Ping(); err != nil {
 		return nil, err
 	}
 
@@ -49,11 +48,8 @@ func main() {
 	app := &application{
 		errorLog: errorLog,
 		infoLog: infoLog,
-		memories: &sqlite.MemoryModel(DB: database),
+		memories: &sqlite.MemoryModel{DB: database},
 	}
-
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
 	srv := &http.Server{
 		Addr: *addr,
@@ -62,6 +58,6 @@ func main() {
 	}
 
 	infoLog.Printf("Starting server on %s", *addr)
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }

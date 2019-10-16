@@ -2,9 +2,10 @@ package main
 
 import (
 	"net/http"
-	"html/template"
 	"fmt"
 	"strconv"
+	"errors"
+	"github.com/ECAllen/lets-go/pkg/models"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -73,15 +74,12 @@ func (app *application) createMemory(w http.ResponseWriter, r *http.Request){
 
 	title := "0 snail"
 	content := "0 snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n- Kobayashi Issa"
-	created := "2019-11-10"
 
-	id, err := app.memories.Insert(title,content,created)
+	id, err := app.memories.Insert(title,content)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("memory?id=%id", id), http.StatusSender)
+	http.Redirect(w, r, fmt.Sprintf("memory?id=%id", id), http.StatusSeeOther)
 }
-}
-
