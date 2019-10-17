@@ -20,27 +20,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, memory := range m {
-		fmt.Fprintf(w, "%v\n", memory)
-	}
-
-//	files := []string{
-//		"./ui/html/home.page.tmpl",
-//		"./ui/html/base.layout.tmpl",
-//		"./ui/html/footer.partial.tmpl",
-//	}
-//
-//	ts, err := template.ParseFiles(files...)
-//	if err != nil {
-//		app.serverError(w, err)
-//		return
-//	}
-//
-//	err = ts.Execute(w, nil)
-//	if err != nil {
-//		app.serverError(w, err)
-//	}
-
+	app.render(w, r, "home.page.tmpl", &templateData{Memories: m,})
 }
 
 func (app *application) showMemory(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +31,7 @@ func (app *application) showMemory(w http.ResponseWriter, r *http.Request) {
 	}
 
 
-	m, err := app.memories.Get(id)
+	mid, err := app.memories.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			app.notFound(w)
@@ -61,7 +41,7 @@ func (app *application) showMemory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "%v", m)
+	app.render(w, r, "show.page.tmpl", &templateData{Memory: mid,})
 }
 
 

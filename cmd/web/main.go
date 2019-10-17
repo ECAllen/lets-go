@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"html/template"
 	"flag"
 	"os"
 	"database/sql"
@@ -14,6 +15,7 @@ type application struct {
 	errorLog *log.Logger
 	infoLog *log.Logger
 	memories *sqlite.MemoryModel
+	templateCache map[string]*template.Template
 }
 
 func openDB(dbFile string) (*sql.DB, error) {
@@ -45,10 +47,16 @@ func main() {
 
 	defer database.Close()
 
+	templateCache, err := newTemplateCache("./ui/html")
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
 	app := &application{
 		errorLog: errorLog,
 		infoLog: infoLog,
 		memories: &sqlite.MemoryModel{DB: database},
+		templateCache: templateCache,
 	}
 
 	srv := &http.Server{

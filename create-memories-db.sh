@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#sql="\"INSERT INTO keys ('date','chan','key','name','desc','ser','ep','cat') VALUES('xxx','xxx','xxxx','xxxx','xxxxx.','xxx','xxx','xxxx');\""      
-#echo $sql
-#sqlite3 mydb.db "$sql"
-
 index_sql="CREATE INDEX idx_memories_created ON memories(created);"
 
 create_sql="CREATE TABLE IF NOT EXISTS memories(id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, content TEXT NOT NULL, created TEST NOT NULL);"
