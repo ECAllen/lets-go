@@ -8,13 +8,13 @@ import (
 )
 
 type templateData struct {
-	CurrentYear int 
+	CurrentYear int
 	Memory *models.Memory
 	Memories []*models.Memory
 }
 
 func humanDate(t time.Time) string {
-	return t.Format("2006 06 06 10am")
+	return t.Format("02 Jan 2006 at 15:04")
 }
 
 var funcs = template.FuncMap{

@@ -15,14 +15,13 @@ func (m *MemoryModel) Insert(title, content string) (int, error) {
 
 	stmt := "INSERT INTO memories (title, content, created) VALUES(?, ?, ?)"
 	currentTime := time.Now()
-	created := currentTime.Format("2006.01.02 15:04:05")
+	created := currentTime.Format("2006-01-02 15:04:05.000")
 
 	result, err := m.DB.Exec(stmt, title, content, created)
 	if err != nil {
 		return 0, err
 	}
 
-	//TODO check sqlite doc for LastInsertId
 	id,err := result.LastInsertId()
 	if err != nil {
 		return 0, err
@@ -38,7 +37,8 @@ func (m *MemoryModel) Get(id int) (*models.Memory, error) {
 
 	mem := &models.Memory{}
 
-	err := row.Scan(&mem.ID, &mem.Title, &mem.Content, &mem.Created)
+	var createdDate string
+	err := row.Scan(&mem.ID, &mem.Title, &mem.Content, &createdDate)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows){
 			return nil, models.ErrNoRecord
@@ -46,6 +46,12 @@ func (m *MemoryModel) Get(id int) (*models.Memory, error) {
 			return nil, err
 		}
 	}
+
+	t,err:= time.Parse("2006-01-02 15:04:05.000", createdDate)
+	if err != nil {
+		return nil, err
+	}
+        mem.Created = t
 
 	return mem, nil
 }
@@ -62,14 +68,22 @@ func (m *MemoryModel) Latest() ([]*models.Memory, error) {
 	defer rows.Close()
 
 	memories := []*models.Memory{}
+	var createdDate string
 
 	for rows.Next() {
 		m := &models.Memory{}
 
-		err = rows.Scan(&m.ID, &m.Title, &m.Content, &m.Created)
+		err = rows.Scan(&m.ID, &m.Title, &m.Content, &createdDate)
 		if err != nil {
 			return nil, err
 		}
+
+		t,err:= time.Parse("2006-01-02 15:04:05.000", createdDate)
+		if err != nil {
+			return nil, err
+		}
+      		m.Created = t
+
 		memories = append(memories, m)
 	}
 
