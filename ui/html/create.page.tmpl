@@ -1,0 +1,26 @@
+{{template "base" .}}
+
+{{define "title"}}Create a New Memory{{end}}
+
+{{define "main"}}
+<form action='/memory/create' method='POST'>
+	<div>
+		<label>Title</label>
+		<input type='text' name='title'>
+	</div>
+	<div>
+		<label>Content</label>
+		<textarea name='content'></textarea>
+	</div>
+	<div>
+		<label>Delete in:</label>
+		<input type='radio' name='expires' value='0' checked> Never 
+		<input type='radio' name='expires' value='365'> One year
+		<input type='radio' name='expires' value='7'> One week
+		<input type='radio' name='expires' value='1'> One day
+	</div>
+	<div>
+		<input type='submit' value='Publish'>
+	</div>
+</form>
+{{end}}
