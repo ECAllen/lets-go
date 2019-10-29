@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 	"errors"
+	"strings"
+	"unicode/utf8"
 	"github.com/ECAllen/lets-go/pkg/models"
 )
 
@@ -50,6 +52,26 @@ func (app *application) createMemory(w http.ResponseWriter, r *http.Request){
 
 	title := r.PostForm.Get("title")
 	content := r.PostForm.Get("content")
+
+	errors := make(map[string]string)
+
+	if strings.TrimSpace(title) == "" {
+		errors["title"] = "This field cannot be blank"
+	} else if utf8.RuneCountInString(title) > 100 {
+		errors["title"] = "This field is too long (100 character max)"
+	}
+
+	if strings.TrimSpace(content) == "" {
+		errors["content"] = "This field cannot be blank"
+	}
+
+	if len(errors) > 0 {
+		app.render(w, r, "create.page.tmpl", &templateData{
+			FormErrors: errors,
+			FormData: r.PostForm,
+		})
+		return
+	}
 
 	id, err := app.memories.Insert(title,content)
 	if err != nil {
