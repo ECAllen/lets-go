@@ -3,15 +3,14 @@ package main
 import (
 	"time"
 	"html/template"
-	"net/url"
 	"path/filepath"
 	"github.com/ECAllen/lets-go/pkg/models"
+	"github.com/ECAllen/lets-go/pkg/forms"
 )
 
 type templateData struct {
-	CurrentYear int
-	FormData url.Values
-	FormErrors map[string]string
+	CurrentYear	int
+	Form		*forms.Form
 	Memory *models.Memory
 	Memories []*models.Memory
 }

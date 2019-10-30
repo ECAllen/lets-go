@@ -4,6 +4,7 @@
 
 {{define "main"}}
 <form action='/memory/create' method='POST'>
+   {{with .Form}}
 	<div>
 		<label>Title</label>
 		{{with .FormErrors.title}}
@@ -28,5 +29,6 @@
 	<div>
 		<input type='submit' value='Publish'>
 	</div>
+   {{end}}
 </form>
 {{end}}

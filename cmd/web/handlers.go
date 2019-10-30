@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"strconv"
 	"errors"
-	"strings"
-	"unicode/utf8"
 	"github.com/ECAllen/lets-go/pkg/models"
+	"github.com/ECAllen/lets-go/pkg/forms"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +40,11 @@ func (app *application) showMemory(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, "show.page.tmpl", &templateData{Memory: mid,})
 }
 
+func (app *application) createMemoryForm(w http.ResponseWriter, r *http.Request) {
+	app.render(w, r, "create.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
+}
 
 func (app *application) createMemory(w http.ResponseWriter, r *http.Request){
 
@@ -50,30 +54,17 @@ func (app *application) createMemory(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
+	form := forms.New(r.PostForm)
+	form.Required("title", "content", "expires")
+	form.MaxLength("title", 100)
+	form.PermittedValues("expires", "365", "7", "1")
 
-	errors := make(map[string]string)
-
-	if strings.TrimSpace(title) == "" {
-		errors["title"] = "This field cannot be blank"
-	} else if utf8.RuneCountInString(title) > 100 {
-		errors["title"] = "This field is too long (100 character max)"
-	}
-
-	if strings.TrimSpace(content) == "" {
-		errors["content"] = "This field cannot be blank"
-	}
-
-	if len(errors) > 0 {
-		app.render(w, r, "create.page.tmpl", &templateData{
-			FormErrors: errors,
-			FormData: r.PostForm,
-		})
+	if !form.Valid() {
+		app.render(w,r, "create.page.tmpl", &templateData{Form: form})
 		return
 	}
 
-	id, err := app.memories.Insert(title,content)
+	id, err := app.memories.Insert(form.Get("title"),form.Get("content"))
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -82,7 +73,4 @@ func (app *application) createMemory(w http.ResponseWriter, r *http.Request){
 	http.Redirect(w, r, fmt.Sprintf("/memory/%d", id), http.StatusSeeOther)
 }
 
-func (app *application) createMemoryForm(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "create.page.tmpl", nil)
-}
 
