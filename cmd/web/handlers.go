@@ -70,6 +70,7 @@ func (app *application) createMemory(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
+	app.session.Put(r, "flash", "Log successfully created")
 	http.Redirect(w, r, fmt.Sprintf("/memory/%d", id), http.StatusSeeOther)
 }
 

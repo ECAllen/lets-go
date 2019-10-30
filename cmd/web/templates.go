@@ -11,8 +11,9 @@ import (
 type templateData struct {
 	CurrentYear	int
 	Form		*forms.Form
-	Memory *models.Memory
-	Memories []*models.Memory
+	Flash		string
+	Memory		*models.Memory
+	Memories	[]*models.Memory
 }
 
 func humanDate(t time.Time) string {
