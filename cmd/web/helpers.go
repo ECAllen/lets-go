@@ -23,14 +23,14 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
-func (app *application) addTemplateData(td *templateData) (*templateData) {
+func (app *application) addTemplateData(td *templateData, r *http.Request) (*templateData) {
 	if td == nil {
 		td = &templateData{}
 	}
 
 	td.CurrentYear = time.Now().Year()
 
-	td.Flash == app.session.PopString(r, "flash")
+	td.Flash = app.session.PopString(r, "flash")
 
 	return td
 }
@@ -45,7 +45,7 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 
 	buf := new(bytes.Buffer)
 
-	err := ts.Execute(buf, app.addTemplateData(td))
+	err := ts.Execute(buf, app.addTemplateData(td, r))
 	if  err != nil {
 		app.serverError(w, err)
 		return

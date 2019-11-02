@@ -51,6 +51,9 @@ func main() {
 
 	defer database.Close()
 
+	session := sessions.New([]byte(*secret))
+	session.Lifetime = 12 * time.Hour
+
 	templateCache, err := newTemplateCache("./ui/html")
 	if err != nil {
 		errorLog.Fatal(err)
@@ -71,6 +74,6 @@ func main() {
 	}
 
 	infoLog.Printf("Starting server on %s", *addr)
-	err = srv.ListenAndServe()
+	err = srv.ListenAndServeTLS("./tls/cert.pem","./tls/key.pem")
 	errorLog.Fatal(err)
 }
