@@ -10,6 +10,7 @@ INSERT INTO memories (title, content, created) VALUES (    'Over the wintry fore
 
 INSERT INTO memories (title, content, created) VALUES (    'First autumn morning',    'First autumn morning\nthe mirror I stare into\nshows my father''s face.\n\n– Murakami Kijo', '2019-10-11 11:11:11.111'   );"
 
+rm memories.db
 sqlite3 memories.db "$create_sql"
 sqlite3 memories.db "$index_sql"
 sqlite3 memories.db "$data_sql"
