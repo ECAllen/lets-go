@@ -1,13 +1,34 @@
 package main
 
 import (
-	"net/http"
-	"fmt"
-	"strconv"
 	"errors"
-	"github.com/ECAllen/lets-go/pkg/models"
+	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/ECAllen/lets-go/pkg/forms"
+	"github.com/ECAllen/lets-go/pkg/models"
 )
+
+func (app *application) signupUserForm(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Display the user signhup form...")
+}
+
+func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Sign up the user...")
+}
+
+func (app *application) loginUserForm(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Display login user form...")
+}
+
+func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Login user...")
+}
+
+func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Logout user...")
+}
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	m, err := app.memories.Latest()
@@ -16,7 +37,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.render(w, r, "home.page.tmpl", &templateData{Memories: m,})
+	app.render(w, r, "home.page.tmpl", &templateData{Memories: m})
 }
 
 func (app *application) showMemory(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +46,6 @@ func (app *application) showMemory(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w)
 		return
 	}
-
 
 	mid, err := app.memories.Get(id)
 	if err != nil {
@@ -37,7 +57,7 @@ func (app *application) showMemory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.render(w, r, "show.page.tmpl", &templateData{Memory: mid,})
+	app.render(w, r, "show.page.tmpl", &templateData{Memory: mid})
 }
 
 func (app *application) createMemoryForm(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +66,7 @@ func (app *application) createMemoryForm(w http.ResponseWriter, r *http.Request)
 	})
 }
 
-func (app *application) createMemory(w http.ResponseWriter, r *http.Request){
+func (app *application) createMemory(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseForm()
 	if err != nil {
@@ -60,11 +80,11 @@ func (app *application) createMemory(w http.ResponseWriter, r *http.Request){
 	form.PermittedValues("expires", "365", "7", "1")
 
 	if !form.Valid() {
-		app.render(w,r, "create.page.tmpl", &templateData{Form: form})
+		app.render(w, r, "create.page.tmpl", &templateData{Form: form})
 		return
 	}
 
-	id, err := app.memories.Insert(form.Get("title"),form.Get("content"))
+	id, err := app.memories.Insert(form.Get("title"), form.Get("content"))
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -73,5 +93,3 @@ func (app *application) createMemory(w http.ResponseWriter, r *http.Request){
 	app.session.Put(r, "flash", "Log successfully created")
 	http.Redirect(w, r, fmt.Sprintf("/memory/%d", id), http.StatusSeeOther)
 }
-
-
