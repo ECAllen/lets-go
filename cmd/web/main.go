@@ -1,25 +1,27 @@
 package main
 
 import (
-    "crypto/tls"
+	"crypto/tls"
+	"database/sql"
+	"flag"
+	"html/template"
 	"log"
 	"net/http"
-	"html/template"
-	"flag"
 	"os"
 	"time"
-	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
+
 	"github.com/ECAllen/lets-go/pkg/models/sqlite"
 	"github.com/golangcollege/sessions"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type application struct {
-	errorLog *log.Logger
-	infoLog *log.Logger
-	session *sessions.Session
-	memories *sqlite.MemoryModel
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	session       *sessions.Session
+	memories      *sqlite.MemoryModel
 	templateCache map[string]*template.Template
+	users         *sqlite.UserModel
 }
 
 func openDB(dbFile string) (*sql.DB, error) {
@@ -39,7 +41,7 @@ func openDB(dbFile string) (*sql.DB, error) {
 func main() {
 
 	addr := flag.String("addr", ":4000", "HTTP network address")
-	secret := flag.String("secret", "TODO replace w 32 byte random str" , "Secret key")
+	secret := flag.String("secret", "TODO replace w 32 byte random str", "Secret key")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -62,30 +64,30 @@ func main() {
 	}
 
 	app := &application{
-		errorLog: errorLog,
-		infoLog: infoLog,
-		session: session,
-		memories: &sqlite.MemoryModel{DB: database},
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		session:       session,
+		memories:      &sqlite.MemoryModel{DB: database},
 		templateCache: templateCache,
+		users:         &sqlite.UserModel{DB: database},
 	}
 
 	tlsConfig := &tls.Config{
 		PreferServerCipherSuites: true,
-		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+		CurvePreferences:         []tls.CurveID{tls.X25519, tls.CurveP256},
 	}
-	
 
 	srv := &http.Server{
-		Addr: *addr,
-		ErrorLog: errorLog,
-		Handler: app.routes(),
-		TLSConfig: tlsConfig,
-		IdleTimeout: time.Minute,
-		ReadTimeout: 5 * time.Second,
+		Addr:         *addr,
+		ErrorLog:     errorLog,
+		Handler:      app.routes(),
+		TLSConfig:    tlsConfig,
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 
 	infoLog.Printf("Starting server on %s", *addr)
-	err = srv.ListenAndServeTLS("./tls/cert.pem","./tls/key.pem")
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errorLog.Fatal(err)
 }

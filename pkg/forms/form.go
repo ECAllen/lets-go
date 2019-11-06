@@ -3,15 +3,21 @@ package forms
 import (
 	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 	"unicode/utf8"
 )
 
+// EmailRX email regex
+var EmailRX = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+// Form struct
 type Form struct {
 	url.Values
 	Errors errors
 }
 
+// New constructor
 func New(data url.Values) *Form {
 	return &Form{
 		data,
@@ -19,6 +25,7 @@ func New(data url.Values) *Form {
 	}
 }
 
+// Required check required field
 func (f *Form) Required(fields ...string) {
 	for _, field := range fields {
 		value := f.Get(field)
@@ -28,6 +35,7 @@ func (f *Form) Required(fields ...string) {
 	}
 }
 
+// MaxLength
 func (f *Form) MaxLength(field string, d int) {
 	value := f.Get(field)
 	if value == "" {
@@ -54,4 +62,3 @@ func (f *Form) PermittedValues(field string, opts ...string) {
 func (f *Form) Valid() bool {
 	return len(f.Errors) == 0
 }
-
