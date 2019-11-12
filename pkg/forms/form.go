@@ -35,7 +35,7 @@ func (f *Form) Required(fields ...string) {
 	}
 }
 
-// MaxLength
+// MaxLength check inout size
 func (f *Form) MaxLength(field string, d int) {
 	value := f.Get(field)
 	if value == "" {
@@ -46,6 +46,7 @@ func (f *Form) MaxLength(field string, d int) {
 	}
 }
 
+// PermittedValues verify field is valid value
 func (f *Form) PermittedValues(field string, opts ...string) {
 	value := f.Get(field)
 	if value == "" {
@@ -59,6 +60,30 @@ func (f *Form) PermittedValues(field string, opts ...string) {
 	f.Errors.Add(field, "This filed is invalid")
 }
 
+// MinLength checks the field is a minimum length
+func (f *Form) MinLength(field string, d int) {
+	value := f.Get(field)
+	if value == "" {
+		return
+	}
+
+	if utf8.RuneCountInString(value) < d {
+		f.Errors.Add(field, fmt.Sprintf("This field is too short (minimum is %d characters)", d))
+	}
+}
+
+// MatchesPattern checks if field matches a regexp pattern
+func (f *Form) MatchesPattern(field string, pattern *regexp.Regexp) {
+	value := f.Get(field)
+	if value == "" {
+		return
+	}
+	if !pattern.MatchString(value) {
+		f.Errors.Add(field, "This field is invalid")
+	}
+}
+
+// Valid check length of form Errors
 func (f *Form) Valid() bool {
 	return len(f.Errors) == 0
 }
