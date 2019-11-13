@@ -36,25 +36,35 @@ func (m *UserModel) Insert(name, email, password string) error {
 	    		return models.ErrDuplicateEmail
 	    	}
 	    }
-		/* this needs to be changed
-		ErrConstraint Error #9
-		var sqliteError *sqlite.Error
-		if errors.As(err, &sqliteError) {
-			if sqliteError.Code == 1062 && strings.Contains(mySQLiteError.Message, "users_uc_email") {
-				return models.ErrDuplicateEmail
-			}
-		}
-
-        		
-		*/
 		return err
 	}
 	return nil
 }
 
 // Authenticate func
-func (m *UserModel) Authenticate(name, email, password string) error {
-	return nil
+func (m *UserModel) Authenticate(email, password string) (int, error) {
+	var id int
+	var hashedPassword []byte
+	stmt := "SELECT id, hashed_password FROM users WHERE email = ? AND active = TRUE"
+	row := m.DB.QueryRow(stmt,email)
+	err := row.Scan(&id, &hashedPassword)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows){
+			return 0, models.ErrInvalidCredentials
+		}else{
+			return 0, err
+		}
+	}
+
+	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(password))
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword){
+			return 0, models.ErrInvalidCredentials
+		}else{
+			return 0, err
+		}
+	}
+	return id, nil
 }
 
 // Get user func
