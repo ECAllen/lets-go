@@ -2,9 +2,11 @@ package sqlite
 
 import (
 	"database/sql"
-
+	"errors"
+	"time"
 	"github.com/ECAllen/lets-go/pkg/models"
 	"golang.org/x/crypto/bcrypt"
+	"github.com/mattn/go-sqlite3"
 )
 
 // UserModel DB pool
@@ -18,18 +20,32 @@ func (m *UserModel) Insert(name, email, password string) error {
 	if err != nil {
 		return err
 	}
+	
+    currentTime := time.Now()
+	created := currentTime.Format("2006-01-02 15:04:05.000")
 
-	stmt := `INSERT INTO users (name, email, hashed_password, created) VALUES(?,?,?, UTC_TIMEPSTAMP())`
+	stmt := `INSERT INTO users (name, email, hashed_password, created) VALUES(?,?,?,?)`
 
-	_, err = m.DB.Exec(stmt, name, email, string(hashedPassword))
+	_, err = m.DB.Exec(stmt, name, email, string(hashedPassword), created)
 	if err != nil {
-		/* TODO this needs to be changed
+        // TODO this needs to be tested
+        var sqlite3Error *sqlite3.Error
+        // TODO remove outer if
+	    if errors.As(err, &sqlite3Error){
+	    	if errors.Is(err, sqlite3.ErrConstraint){
+	    		return models.ErrDuplicateEmail
+	    	}
+	    }
+		/* this needs to be changed
+		ErrConstraint Error #9
 		var sqliteError *sqlite.Error
 		if errors.As(err, &sqliteError) {
 			if sqliteError.Code == 1062 && strings.Contains(mySQLiteError.Message, "users_uc_email") {
 				return models.ErrDuplicateEmail
 			}
 		}
+
+        		
 		*/
 		return err
 	}
