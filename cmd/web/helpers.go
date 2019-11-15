@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"runtime/debug"
 	"time"
+
 	"github.com/justinas/nosurf"
 )
 
-func (app *application) serverError(w http.ResponseWriter, err error){
+func (app *application) serverError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
 	app.errorLog.Output(2, trace)
 
@@ -24,19 +25,19 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
-func (app *application) addTemplateData(td *templateData, r *http.Request) (*templateData) {
+func (app *application) addTemplateData(td *templateData, r *http.Request) *templateData {
 	if td == nil {
 		td = &templateData{}
 	}
 
-    td.CSRFToken = nosurf.Token(r)
+	td.CSRFToken = nosurf.Token(r)
 	td.CurrentYear = time.Now().Year()
 	td.Flash = app.session.PopString(r, "flash")
-    td.IsAuthenticated = app.isAuthenticated(r)
+	td.IsAuthenticated = app.isAuthenticated(r)
 	return td
 }
 
-func (app *application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData){
+func (app *application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
 
 	ts, ok := app.templateCache[name]
 	if !ok {
@@ -47,7 +48,7 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 	buf := new(bytes.Buffer)
 
 	err := ts.Execute(buf, app.addTemplateData(td, r))
-	if  err != nil {
+	if err != nil {
 		app.serverError(w, err)
 		return
 	}
@@ -57,5 +58,9 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 }
 
 func (app *application) isAuthenticated(r *http.Request) bool {
-	return app.session.Exists(r,"authenticatedUserID")
+	isAuthenticated, ok := r.Context().Value(contextKeyIsAuthenticated).(bool)
+	if !ok {
+		return false
+	}
+	return isAuthenticated
 }
