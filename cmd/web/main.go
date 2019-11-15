@@ -15,6 +15,10 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type contextKey string
+
+const contextKeyIsAuthenticated = contextKey("isAuthenticated")
+
 type application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
